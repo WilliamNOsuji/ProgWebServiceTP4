@@ -1,0 +1,19 @@
+1)dotnet dev-certs https --clean
+2)dotnet dev-certs https --trust
+3)restart VS
+4)crée la baseDeDonner: dotnet ef database update
+
+___________________
+
+idServer
+Nombre de 1:8-4-4-12
+
+_______________
+Angular
+npm install
+ng serve
+
+_________________
+
+
+crée la baseDeDonner: dotnet ef migrations add InitialCreate

@@ -16,6 +16,7 @@ using PostHubAPI.Models;
 using PostHubAPI.Models.DTOs;
 using PostHubAPI.Services;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace PostHubAPI.Controllers
 {
@@ -59,23 +60,62 @@ namespace PostHubAPI.Controllers
 
             return Ok(new PostDisplayDTO(post, true, user));
         }
-
+       
         [HttpPost("{parentCommentId}")]
+        [DisableRequestSizeLimit]
         [Authorize]
-        public async Task<ActionResult<CommentDisplayDTO>> PostComment(int parentCommentId, CommentDTO commentDTO)
+        public async Task<ActionResult<CommentDisplayDTO>> PostComment(int parentCommentId)
         {
+            //int parentCommentId;
+            Picture picture = null;
+            //CommentDTO comment=new CommentDTO();
+            String? texte=null;
+          
+            //PROF CODE
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (user == null) return Unauthorized();
 
             Comment? parentComment = await _commentService.GetComment(parentCommentId);
             if (parentComment == null || parentComment.User == null) return BadRequest();
+            //Met mon code ici
+            try
+            {
 
-            Comment? newComment = await _commentService.CreateComment(user, commentDTO.Text, parentComment);
+                IFormCollection petitCollection = await Request.ReadFormAsync();
+                IFormFile? file = petitCollection.Files.GetFile("commentPictures");
+                if (Request.Form.Count <= 0) throw new Exception("Aucun Commentaire trouver");
+                texte = Request.Form["comment"];
+                Boolean reussit = false;
+                if (file != null)
+                {
+                    reussit = await _pictureService.sauvegarderImage(file);
+                    //_pictureService.Entry(picture);
+                    //await _pictureService.SaveChangesAsync();
+                }
+                else
+                {
+                    throw new Exception("Aucune Image trouver");
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+
+
+
+
+            //_________________
+
+            Comment? newComment = await _commentService.CreateComment(user, texte, parentComment);
+            
+            
             if(newComment == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
             bool voteToggleSuccess = await _commentService.UpvoteComment(newComment.Id, user);
             if (!voteToggleSuccess) return StatusCode(StatusCodes.Status500InternalServerError);
-
+            //
             return Ok(new CommentDisplayDTO(newComment, false, user));
         }
 
@@ -262,5 +302,16 @@ namespace PostHubAPI.Controllers
         {
             return hub.Posts!.OrderByDescending(p => p.MainComment?.Date).Take(qty);
         }
+
+        //
+        [HttpPost("{getImageComment}")]
+        [DisableRequestSizeLimit]
+        [Authorize]
+        public async Task<ActionResult<CommentDisplayDTO>> getImageComment(int id){
+            Picture obj=await _pictureService.getImageObj(id);
+            Byte[] data= await _pictureService.getImageData(obj.FileName,"full");
+            return Ok(File(data,obj.MimeType));
+        }
+
     }
 }

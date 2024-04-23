@@ -22,7 +22,7 @@ namespace PostHubAPI.Data
             // Nécessaire pour la relation One-To-One entre Post et Comment : EF veut savoir quelle table contiendra la clé étrangère
             modelBuilder.Entity<Post>().HasOne(p => p.MainComment).WithOne(c => c.MainCommentOf).HasForeignKey<Post>(p => p.MainCommentId);
         }
-
+        public DbSet<ImageProprietaire> image { get; set;}=default!;
         public DbSet<Hub> Hubs { get; set; } = default!;
         public DbSet<Post> Posts { get; set; } = default!;
         public DbSet<Comment> Comments { get; set; } = default!;

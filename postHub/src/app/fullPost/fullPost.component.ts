@@ -30,7 +30,7 @@ export class FullPostComponent implements OnInit {
   faMessage = faMessage;
   faImage = faImage;
   faXmark = faXmark;
-
+  @ViewChild("fileUploadViewChild",{static:false}) imageInput ?:ElementRef;
   constructor(public postService : PostService, public route : ActivatedRoute, public router : Router) { }
 
   async ngOnInit() {
@@ -56,11 +56,15 @@ export class FullPostComponent implements OnInit {
       alert("Écris un commentaire niochon");
       return;
     }
-
+    console.log(this.imageInput);
+    //let fichier=this.imageInput?.nativeElement.files[0];
+   
+    
     let commentDTO = {
-      text : this.newComment
+      text : this.newComment,
+      fichier:this.imageInput?.nativeElement.files[0]
     }
-
+    console.log(commentDTO);
     this.post?.mainComment?.subComments?.push(await this.postService.postComment(commentDTO, this.post.mainComment.id));
 
     this.newComment = "";

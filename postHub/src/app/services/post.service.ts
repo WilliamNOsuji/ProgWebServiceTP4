@@ -34,7 +34,6 @@ export class PostService {
 
   // Créer un post
   async postPost(hubId : number, formData : any) : Promise<Post>{
-   
     let x = await lastValueFrom(this.http.post<any>("https://localhost:7007/api/Comments/PostPost/" + hubId, formData));
     console.log(x);
     return x;
@@ -58,8 +57,11 @@ export class PostService {
 
   // Créer un sous-commentaire (donc tous les commentaires qui ne sont pas le commentaire principal d'un post)
   async postComment(dto : any, parentCommentId : number) : Promise<Comment>{
-
-    let x = await lastValueFrom(this.http.post<any>("https://localhost:7007/api/Comments/PostComment/" + parentCommentId, dto));
+    console.log(dto);
+    let data=new FormData();
+    data.append("commentPictures",dto.fichier,dto.fichier.name);
+    data.append("comment",dto.text)
+    let x = await lastValueFrom(this.http.post<any>("https://localhost:7007/api/Comments/PostComment/" + parentCommentId,data));
     console.log(x);
     return x;
 
